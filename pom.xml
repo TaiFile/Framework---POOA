@@ -13,7 +13,7 @@
     <artifactId>Framework---POOA</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Framework---POOA</name>
-    <description>Framework para Persitência em Banco de Dados</description>
+    <description>Framework para Persistência em Banco de Dados</description>
 
     <properties>
         <java.version>21</java.version>
