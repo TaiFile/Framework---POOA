@@ -17,18 +17,16 @@ public class Main {
         PersistenceFramework framework = new PersistenceFramework(databaseManager);
 
         User user = new User();
-        user.setName("Eduardo");
-        user.setAge(25);
+        user.setName("Vitor");
+        user.setAge(23);
 
         framework.insert(user);
-        // Exemplo de uso no Main.java
         User foundUser = framework.findById(User.class, 1L);
         if (foundUser != null) {
             System.out.println("Usuário encontrado: " + foundUser.getName());
         } else {
             System.out.println("Usuário não encontrado");
         }
-        // Exemplo de uso no Main.java
         List<User> allUsers = framework.findAll(User.class);
 
         if (!allUsers.isEmpty()) {
@@ -38,6 +36,21 @@ public class Main {
             }
         } else {
             System.out.println("Nenhum usuário encontrado");
+        }
+        boolean userExists = framework.exists(User.class, 1L);
+
+        if (userExists) {
+            System.out.println("Usuário com ID 1 existe no banco de dados");
+        } else {
+            System.out.println("Usuário com ID 1 não existe no banco de dados");
+        }
+
+        Long userId = 5L;
+        if (framework.exists(User.class, userId)) {
+            User users = framework.findById(User.class, userId);
+            System.out.println("Usuário encontrado: " + users.getName());
+        } else {
+            System.out.println("Usuário com ID " + userId + " não existe");
         }
     }
 }
