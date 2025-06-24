@@ -22,7 +22,6 @@ public class User {
     @Enumerated(Enumerated.EnumType.STRING)
     private UserGender gender;
 
-
     public Long getId() {
         return id;
     }

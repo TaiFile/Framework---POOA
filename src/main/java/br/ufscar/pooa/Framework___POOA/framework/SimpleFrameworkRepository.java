@@ -51,7 +51,7 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
     public Optional<T> findById(ID id) {
         String tableName = getTableName(domainClass);
         List<Field> columns = getColumns(domainClass);
-        Field idField = getIdField(columns);
+        Field idField = getIdField(domainClass);
 
         String selectSql = dqlGenerator.generateSelectByIdSQL(tableName, columns, idField);
 
@@ -125,8 +125,7 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
     @Override
     public boolean existsById(ID id) {
         String tableName = getTableName(domainClass);
-        List<Field> columns = getColumns(domainClass);
-        Field idField = getIdField(columns);
+        Field idField = getIdField(domainClass);
 
         String existsSql = dqlGenerator.generateExistsSQL(tableName, idField);
 
@@ -179,11 +178,15 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
         return fields;
     }
 
-    private Field getIdField(List<Field> columns) {
-        return columns.stream()
+    private Field getIdField(Class<?> clazz) {
+        List<Field> fields = new ArrayList<>(List.of(clazz.getDeclaredFields()));
+        Field idField = fields.stream()
                 .filter(field -> field.isAnnotationPresent(Id.class))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Entity must have an @Id field"));
+
+        idField.setAccessible(true);
+        return idField;
     }
 
     private Field findFieldByName(List<Field> columns, String fieldName) {
@@ -193,48 +196,48 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
                 .orElseThrow(() -> new IllegalArgumentException("No field named '" + fieldName + "' in entity " + domainClass.getSimpleName()));
     }
 
-private T mapResultSetToEntity(ResultSet resultSet, Class<T> clazz, List<Field> columns) throws Exception {
-    T instance = clazz.getDeclaredConstructor().newInstance();
-    
-    for (Field field : columns) {
-        Column columnAnnotation = field.getAnnotation(Column.class);
-        String columnName = columnAnnotation.name();
-        
-        Object value;
-        
-        // Tratamento especial para ENUMs
-        if (field.getType().isEnum()) {
-            value = mapEnumFromDatabase(resultSet, columnName, field);  // ← AQUI!
-        } else {
-            value = resultSet.getObject(columnName);
-        }
-        
-        field.set(instance, value);
-    }
-    return instance;
-}
+    private T mapResultSetToEntity(ResultSet resultSet, Class<T> clazz, List<Field> columns) throws Exception {
+        T instance = clazz.getDeclaredConstructor().newInstance();
 
-@SuppressWarnings("unchecked")
-private Object mapEnumFromDatabase(ResultSet resultSet, String columnName, Field field) throws SQLException {
-    Class<Enum> enumClass = (Class<Enum>) field.getType();
-    Enumerated enumAnnotation = field.getAnnotation(Enumerated.class);
-    
-    if (enumAnnotation != null && enumAnnotation.value() == Enumerated.EnumType.STRING) {
-        String enumStringValue = resultSet.getString(columnName);
-        if (enumStringValue == null) return null;
-        
-        return Enum.valueOf(enumClass, enumStringValue);
-    } else {
-        int ordinalValue = resultSet.getInt(columnName);
-        if (resultSet.wasNull()) return null;
-        
-        Enum[] enumConstants = enumClass.getEnumConstants();
-        if (ordinalValue >= 0 && ordinalValue < enumConstants.length) {
-            return enumConstants[ordinalValue];
+        for (Field field : columns) {
+            Column columnAnnotation = field.getAnnotation(Column.class);
+            String columnName = columnAnnotation.name();
+
+            Object value;
+
+            // Tratamento especial para ENUMs
+            if (field.getType().isEnum()) {
+                value = mapEnumFromDatabase(resultSet, columnName, field);  // ← AQUI!
+            } else {
+                value = resultSet.getObject(columnName);
+            }
+
+            field.set(instance, value);
         }
-        return null;
+        return instance;
     }
-}
+
+    @SuppressWarnings("unchecked")
+    private Object mapEnumFromDatabase(ResultSet resultSet, String columnName, Field field) throws SQLException {
+        Class<Enum> enumClass = (Class<Enum>) field.getType();
+        Enumerated enumAnnotation = field.getAnnotation(Enumerated.class);
+
+        if (enumAnnotation != null && enumAnnotation.value() == Enumerated.EnumType.STRING) {
+            String enumStringValue = resultSet.getString(columnName);
+            if (enumStringValue == null) return null;
+
+            return Enum.valueOf(enumClass, enumStringValue);
+        } else {
+            int ordinalValue = resultSet.getInt(columnName);
+            if (resultSet.wasNull()) return null;
+
+            Enum[] enumConstants = enumClass.getEnumConstants();
+            if (ordinalValue >= 0 && ordinalValue < enumConstants.length) {
+                return enumConstants[ordinalValue];
+            }
+            return null;
+        }
+    }
 
     private Object mapEnumToDatabase(Object enumValue, Field field) {
         if (enumValue == null) return null;
@@ -268,22 +271,22 @@ private Object mapEnumFromDatabase(ResultSet resultSet, String columnName, Field
         }
     }
 
-private T executeInsert(T entity, String tableName, List<Field> insertColumns) {
-    String insertSql = dqlGenerator.generateInsertSQL(tableName, insertColumns);
-    
-    try (PreparedStatement statement = databaseManager.getConnection().prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+    private T executeInsert(T entity, String tableName, List<Field> insertColumns) {
+        String insertSql = dqlGenerator.generateInsertSQL(tableName, insertColumns);
 
-        int parameterIndex = 1;
-        for (Field field : insertColumns) {
-            Object value = field.get(entity);
+        try (PreparedStatement statement = databaseManager.getConnection().prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
 
-            if (field.getType().isEnum() && value != null) {
-                Object enumValue = mapEnumToDatabase(value, field);
-                statement.setObject(parameterIndex++, enumValue);
-            } else {
-                statement.setObject(parameterIndex++, value);
+            int parameterIndex = 1;
+            for (Field field : insertColumns) {
+                Object value = field.get(entity);
+
+                if (field.getType().isEnum() && value != null) {
+                    Object enumValue = mapEnumToDatabase(value, field);
+                    statement.setObject(parameterIndex++, enumValue);
+                } else {
+                    statement.setObject(parameterIndex++, value);
+                }
             }
-        }
 
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
@@ -292,7 +295,7 @@ private T executeInsert(T entity, String tableName, List<Field> insertColumns) {
 
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    Field idField = getIdField(getColumns(entity.getClass()));
+                    Field idField = getIdField(domainClass);
                     Object generatedId = generatedKeys.getObject(1);
                     idField.set(entity, generatedId);
                 } else {
