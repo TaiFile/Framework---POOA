@@ -1,7 +1,9 @@
 package br.ufscar.pooa.Framework___POOA;
 
+import br.ufscar.pooa.Framework___POOA.Enum.UserGender;
 import br.ufscar.pooa.Framework___POOA.framework.annotation.Column;
 import br.ufscar.pooa.Framework___POOA.framework.annotation.Entity;
+import br.ufscar.pooa.Framework___POOA.framework.annotation.Enumerated;
 import br.ufscar.pooa.Framework___POOA.framework.annotation.Id;
 
 @Entity(tableName = "users")
@@ -16,6 +18,11 @@ public class User {
     @Column(name = "age")
     private Integer age;
 
+    @Column(name = "gender")
+    @Enumerated(Enumerated.EnumType.STRING)
+    private UserGender gender;
+
+
     public Long getId() {
         return id;
     }
@@ -23,6 +30,14 @@ public class User {
     public User setId(Long id) {
         this.id = id;
         return this;
+    }
+
+    public UserGender getGender() {
+        return gender;
+    }
+
+    public void setGender(UserGender gender) {
+        this.gender = gender;
     }
 
     public String getName() {
