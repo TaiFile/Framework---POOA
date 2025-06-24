@@ -204,7 +204,7 @@ private T mapResultSetToEntity(ResultSet resultSet, Class<T> clazz, List<Field> 
         
         // Tratamento especial para ENUMs
         if (field.getType().isEnum()) {
-            value = mapEnumFromDatabase(resultSet, columnName, field);
+            value = mapEnumFromDatabase(resultSet, columnName, field);  // ← AQUI!
         } else {
             value = resultSet.getObject(columnName);
         }
@@ -235,6 +235,18 @@ private Object mapEnumFromDatabase(ResultSet resultSet, String columnName, Field
         return null;
     }
 }
+
+    private Object mapEnumToDatabase(Object enumValue, Field field) {
+        if (enumValue == null) return null;
+
+        Enumerated enumAnnotation = field.getAnnotation(Enumerated.class);
+
+        if (enumAnnotation != null && enumAnnotation.value() == Enumerated.EnumType.STRING) {
+            return ((Enum<?>) enumValue).name();
+        } else {
+            return ((Enum<?>) enumValue).ordinal();
+        }
+    }
 
     private void handleSQLException(SQLException e) {
         System.err.println("SQLException: " + e.getMessage());
@@ -295,17 +307,6 @@ private T executeInsert(T entity, String tableName, List<Field> insertColumns) {
         return entity;
     }
 
-private Object mapEnumToDatabase(Object enumValue, Field field) {
-    if (enumValue == null) return null;
-    
-    Enumerated enumAnnotation = field.getAnnotation(Enumerated.class);
-    
-    if (enumAnnotation != null && enumAnnotation.value() == Enumerated.EnumType.STRING) {
-        return ((Enum<?>) enumValue).name();
-    } else {
-        return ((Enum<?>) enumValue).ordinal();
-    }
-}
 
     private boolean tableExists(String tableName) {
         try {
