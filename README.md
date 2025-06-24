@@ -30,3 +30,8 @@ O framework de persistência oferece as seguintes operações:
 
 ## Subindo o Banco de dados
 Usar o comando 'docker compose up --build -d'
+
+## Futuras Atualizações
+
+- Atualizar as tabelas no banco de dados quando houver alterações nas classes
+- Mapeamento de relacionamentos entre classes
