@@ -41,14 +41,34 @@ public class DQLGenerator {
         return sql.toString();
     }
 
+    public String generateSelectByFieldSQL(String tableName, List<Field> columns, Field field) {
+        StringBuilder sql = new StringBuilder("SELECT ");
+
+        for (int i = 0; i < columns.size(); i++) {
+            Field currentField = columns.get(i);
+            Column columnAnnotation = currentField.getAnnotation(Column.class);
+            sql.append(columnAnnotation.name());
+
+            if (i < columns.size() - 1) {
+                sql.append(", ");
+            }
+        }
+
+        sql.append(" FROM ").append(tableName);
+        sql.append(" WHERE ");
+
+        Column fieldAnnotation = field.getAnnotation(Column.class);
+        sql.append(fieldAnnotation.name()).append(" = ?");
+
+        return sql.toString();
+    }
+
     public String generateSelectAllSQL(String tableName, List<Field> columns) {
         StringBuilder sql = new StringBuilder("SELECT ");
 
-        // Adicionar todas as colunas
         for (int i = 0; i < columns.size(); i++) {
             Field field = columns.get(i);
-            Column columnAnnotation = field.getAnnotation(Column.class);
-            sql.append(columnAnnotation.name());
+            sql.append(field.getName());
 
             if (i < columns.size() - 1) {
                 sql.append(", ");
@@ -67,6 +87,17 @@ public class DQLGenerator {
 
         Column idColumnAnnotation = idField.getAnnotation(Column.class);
         sql.append(idColumnAnnotation.name()).append(" = ?");
+
+        return sql.toString();
+    }
+
+    public String generateExistsByFieldSQL(String tableName, java.lang.reflect.Field field) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM ");
+        sql.append(tableName);
+        sql.append(" WHERE ");
+
+        br.ufscar.pooa.Framework___POOA.framework.annotation.Column columnAnnotation = field.getAnnotation(br.ufscar.pooa.Framework___POOA.framework.annotation.Column.class);
+        sql.append(columnAnnotation.name()).append(" = ?");
 
         return sql.toString();
     }

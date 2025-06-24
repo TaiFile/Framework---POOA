@@ -5,30 +5,34 @@ import br.ufscar.pooa.Framework___POOA.framework.IFrameworkRepository;
 import java.util.List;
 import java.util.Optional;
 
-public class UserRepository implements IFrameworkRepository<User, Long> {
+public class UserRepository {
     private final IFrameworkRepository<User, Long> repository;
 
     public UserRepository(IFrameworkRepository<User, Long> repository) {
         this.repository = repository;
     }
 
-    @Override
     public User save(User entity) {
         return repository.save(entity);
     }
 
-    @Override
     public Optional<User> findById(Long id) {
         return repository.findById(id);
     }
 
-    @Override
+    public Optional<User> findBy(String fieldName, Object value) {
+        return repository.findBy(fieldName, value);
+    }
+
     public List<User> findAll() {
         return repository.findAll();
     }
 
-    @Override
     public boolean existsById(Long aLong) {
         return repository.existsById(aLong);
+    }
+
+    public boolean existsBy(String fieldName, Object value) {
+        return repository.existsBy(fieldName, value);
     }
 }

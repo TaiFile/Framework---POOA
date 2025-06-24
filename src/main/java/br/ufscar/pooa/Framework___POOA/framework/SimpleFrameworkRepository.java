@@ -73,6 +73,32 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
     }
 
     @Override
+    public Optional<T> findBy(String fieldName, Object value) {
+        String tableName = getTableName(domainClass);
+        List<Field> columns = getColumns(domainClass);
+        Field searchField = findFieldByName(columns, fieldName);
+
+        String selectSql = dqlGenerator.generateSelectByFieldSQL(tableName, columns, searchField);
+
+        try (PreparedStatement statement = databaseManager.getConnection().prepareStatement(selectSql)) {
+            statement.setObject(1, value);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    T instance = mapResultSetToEntity(resultSet, domainClass, columns);
+                    return Optional.of(instance);
+                }
+            }
+        } catch (SQLException e) {
+            handleSQLException(e);
+        } catch (Exception e) {
+            handleReflectionException(e);
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
     public List<T> findAll() {
         String tableName = getTableName(domainClass);
         List<Field> columns = getColumns(domainClass);
@@ -115,7 +141,29 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
         }
     }
 
-    // Helper methods from PersistenceFramework
+    @Override
+    public boolean existsBy(String fieldName, Object value) {
+        String tableName = getTableName(domainClass);
+        List<Field> columns = getColumns(domainClass);
+        Field searchField = findFieldByName(columns, fieldName);
+
+        String existsSql = dqlGenerator.generateExistsByFieldSQL(tableName, searchField);
+
+        try (PreparedStatement statement = databaseManager.getConnection().prepareStatement(existsSql)) {
+            statement.setObject(1, value);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() && resultSet.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            handleSQLException(e);
+            return false;
+        }
+    }
+
+    /**
+     * Helper methods
+     */
     private String getTableName(Class<?> clazz) {
         if (!clazz.isAnnotationPresent(Entity.class)) {
             throw new IllegalArgumentException("Object is not an entity");
@@ -135,6 +183,13 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
                 .filter(field -> field.isAnnotationPresent(Id.class))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Entity must have an @Id field"));
+    }
+
+    private Field findFieldByName(List<Field> columns, String fieldName) {
+        return columns.stream()
+                .filter(field -> field.getName().equals(fieldName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No field named '" + fieldName + "' in entity " + domainClass.getSimpleName()));
     }
 
     private T mapResultSetToEntity(ResultSet resultSet, Class<T> clazz, List<Field> columns) throws Exception {
