@@ -21,10 +21,9 @@ public class DQLGenerator {
     public String generateSelectByIdSQL(String tableName, List<Field> columns, Field idField) {
         StringBuilder sql = new StringBuilder("SELECT ");
 
-        // Adicionar todas as colunas
         for (int i = 0; i < columns.size(); i++) {
-            Field field = columns.get(i);
-            Column columnAnnotation = field.getAnnotation(Column.class);
+            Field currentField = columns.get(i);
+            Column columnAnnotation = currentField.getAnnotation(Column.class);
             sql.append(columnAnnotation.name());
 
             if (i < columns.size() - 1) {
@@ -67,8 +66,9 @@ public class DQLGenerator {
         StringBuilder sql = new StringBuilder("SELECT ");
 
         for (int i = 0; i < columns.size(); i++) {
-            Field field = columns.get(i);
-            sql.append(field.getName());
+            Field currentField = columns.get(i);
+            Column columnAnnotation = currentField.getAnnotation(Column.class);
+            sql.append(columnAnnotation.name());
 
             if (i < columns.size() - 1) {
                 sql.append(", ");
@@ -96,7 +96,7 @@ public class DQLGenerator {
         sql.append(tableName);
         sql.append(" WHERE ");
 
-        br.ufscar.pooa.Framework___POOA.framework.annotation.Column columnAnnotation = field.getAnnotation(br.ufscar.pooa.Framework___POOA.framework.annotation.Column.class);
+        Column columnAnnotation = field.getAnnotation(Column.class);
         sql.append(columnAnnotation.name()).append(" = ?");
 
         return sql.toString();
