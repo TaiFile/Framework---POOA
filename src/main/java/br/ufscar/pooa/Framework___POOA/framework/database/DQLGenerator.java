@@ -1,4 +1,4 @@
-package br.ufscar.pooa.Framework___POOA.framework;
+package br.ufscar.pooa.Framework___POOA.framework.database;
 
 import br.ufscar.pooa.Framework___POOA.framework.annotation.Column;
 
