@@ -1,7 +1,6 @@
 package br.ufscar.pooa.Framework___POOA;
 
 import br.ufscar.pooa.Framework___POOA.framework.IFrameworkRepository;
-import br.ufscar.pooa.Framework___POOA.framework.SimpleFrameworkRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +8,7 @@ import java.util.Optional;
 public class UserRepository implements IFrameworkRepository<User, Long> {
     private final IFrameworkRepository<User, Long> repository;
 
-    public UserRepository(SimpleFrameworkRepository<User, Long> repository) {
+    public UserRepository(IFrameworkRepository<User, Long> repository) {
         this.repository = repository;
     }
 

@@ -1,11 +1,10 @@
-package br.ufscar.pooa.Framework___POOA.framework;
+package br.ufscar.pooa.Framework___POOA;
 
+import br.ufscar.pooa.Framework___POOA.framework.IFrameworkRepository;
+import br.ufscar.pooa.Framework___POOA.framework.SimpleFrameworkRepository;
 import br.ufscar.pooa.Framework___POOA.framework.database.DatabaseManager;
 
 import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 
 public class FrameworkRepositoryFactory<T, ID extends Serializable> {
     private final DatabaseManager databaseManager;
@@ -14,7 +13,7 @@ public class FrameworkRepositoryFactory<T, ID extends Serializable> {
         this.databaseManager = databaseManager;
     }
 
-    public SimpleFrameworkRepository<T, ID> getRepository(Class<T> entityClass) {
+    public IFrameworkRepository<T, ID> getRepository(Class<T> entityClass) {
         return new SimpleFrameworkRepository<>(databaseManager, entityClass);
     }
 }
