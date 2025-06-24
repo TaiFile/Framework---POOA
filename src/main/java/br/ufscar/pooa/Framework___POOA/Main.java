@@ -1,5 +1,6 @@
 package br.ufscar.pooa.Framework___POOA;
 
+import br.ufscar.pooa.Framework___POOA.Enum.UserGender;
 import br.ufscar.pooa.Framework___POOA.framework.IFrameworkRepository;
 import br.ufscar.pooa.Framework___POOA.framework.database.DatabaseManager;
 
@@ -21,6 +22,7 @@ public class Main {
         User user = new User();
         user.setName("Vitor");
         user.setAge(23);
+        user.setGender(UserGender.MALE);
 
         User savedUser = userRepository.save(user);
         System.out.println("Usuário salvo: " + savedUser);

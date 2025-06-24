@@ -2,6 +2,7 @@ package br.ufscar.pooa.Framework___POOA.framework;
 
 import br.ufscar.pooa.Framework___POOA.framework.annotation.Column;
 import br.ufscar.pooa.Framework___POOA.framework.annotation.Entity;
+import br.ufscar.pooa.Framework___POOA.framework.annotation.Enumerated;
 import br.ufscar.pooa.Framework___POOA.framework.annotation.Id;
 import br.ufscar.pooa.Framework___POOA.framework.database.DDLGenerator;
 import br.ufscar.pooa.Framework___POOA.framework.database.DQLGenerator;
@@ -192,15 +193,59 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
                 .orElseThrow(() -> new IllegalArgumentException("No field named '" + fieldName + "' in entity " + domainClass.getSimpleName()));
     }
 
-    private T mapResultSetToEntity(ResultSet resultSet, Class<T> clazz, List<Field> columns) throws Exception {
-        T instance = clazz.getDeclaredConstructor().newInstance();
-        for (Field field : columns) {
-            Column columnAnnotation = field.getAnnotation(Column.class);
-            String columnName = columnAnnotation.name();
-            Object value = resultSet.getObject(columnName);
-            field.set(instance, value);
+private T mapResultSetToEntity(ResultSet resultSet, Class<T> clazz, List<Field> columns) throws Exception {
+    T instance = clazz.getDeclaredConstructor().newInstance();
+    
+    for (Field field : columns) {
+        Column columnAnnotation = field.getAnnotation(Column.class);
+        String columnName = columnAnnotation.name();
+        
+        Object value;
+        
+        // Tratamento especial para ENUMs
+        if (field.getType().isEnum()) {
+            value = mapEnumFromDatabase(resultSet, columnName, field);  // ← AQUI!
+        } else {
+            value = resultSet.getObject(columnName);
         }
-        return instance;
+        
+        field.set(instance, value);
+    }
+    return instance;
+}
+
+@SuppressWarnings("unchecked")
+private Object mapEnumFromDatabase(ResultSet resultSet, String columnName, Field field) throws SQLException {
+    Class<Enum> enumClass = (Class<Enum>) field.getType();
+    Enumerated enumAnnotation = field.getAnnotation(Enumerated.class);
+    
+    if (enumAnnotation != null && enumAnnotation.value() == Enumerated.EnumType.STRING) {
+        String enumStringValue = resultSet.getString(columnName);
+        if (enumStringValue == null) return null;
+        
+        return Enum.valueOf(enumClass, enumStringValue);
+    } else {
+        int ordinalValue = resultSet.getInt(columnName);
+        if (resultSet.wasNull()) return null;
+        
+        Enum[] enumConstants = enumClass.getEnumConstants();
+        if (ordinalValue >= 0 && ordinalValue < enumConstants.length) {
+            return enumConstants[ordinalValue];
+        }
+        return null;
+    }
+}
+
+    private Object mapEnumToDatabase(Object enumValue, Field field) {
+        if (enumValue == null) return null;
+
+        Enumerated enumAnnotation = field.getAnnotation(Enumerated.class);
+
+        if (enumAnnotation != null && enumAnnotation.value() == Enumerated.EnumType.STRING) {
+            return ((Enum<?>) enumValue).name();
+        } else {
+            return ((Enum<?>) enumValue).ordinal();
+        }
     }
 
     private void handleSQLException(SQLException e) {
@@ -223,15 +268,22 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
         }
     }
 
-    private T executeInsert(T entity, String tableName, List<Field> insertColumns) {
-        String insertSql = dqlGenerator.generateInsertSQL(tableName, insertColumns);
-        try (PreparedStatement statement = databaseManager.getConnection().prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+private T executeInsert(T entity, String tableName, List<Field> insertColumns) {
+    String insertSql = dqlGenerator.generateInsertSQL(tableName, insertColumns);
+    
+    try (PreparedStatement statement = databaseManager.getConnection().prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
 
-            int parameterIndex = 1;
-            for (Field field : insertColumns) {
-                Object value = field.get(entity);
+        int parameterIndex = 1;
+        for (Field field : insertColumns) {
+            Object value = field.get(entity);
+
+            if (field.getType().isEnum() && value != null) {
+                Object enumValue = mapEnumToDatabase(value, field);
+                statement.setObject(parameterIndex++, enumValue);
+            } else {
                 statement.setObject(parameterIndex++, value);
             }
+        }
 
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
@@ -257,6 +309,7 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
 
         return null;
     }
+
 
     private boolean tableExists(String tableName) {
         try {

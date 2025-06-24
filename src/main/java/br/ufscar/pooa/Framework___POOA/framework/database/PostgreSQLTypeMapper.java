@@ -1,5 +1,7 @@
 package br.ufscar.pooa.Framework___POOA.framework.database;
 
+import br.ufscar.pooa.Framework___POOA.framework.annotation.Enumerated;
+
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,7 +11,8 @@ import java.util.Map;
 
 public class PostgreSQLTypeMapper {
 
-    private PostgreSQLTypeMapper() {}
+    private PostgreSQLTypeMapper() {
+    }
 
     private static final Map<Class<?>, String> TYPE_MAPPINGS = new HashMap<>();
 
@@ -49,6 +52,10 @@ public class PostgreSQLTypeMapper {
     public static String getPostgreSQLType(Field field) {
         Class<?> fieldType = field.getType();
 
+        if (fieldType.isEnum()) {
+            return getEnumPostgreSQLType(field);
+        }
+
         String sqlType = TYPE_MAPPINGS.get(fieldType);
         if (sqlType != null) {
             return sqlType;
@@ -56,5 +63,14 @@ public class PostgreSQLTypeMapper {
 
         return "VARCHAR(255)";
     }
-}
 
+    private static String getEnumPostgreSQLType(Field field) {
+        Enumerated enumAnnotation = field.getAnnotation(Enumerated.class);
+
+        if (enumAnnotation != null && enumAnnotation.value() == Enumerated.EnumType.STRING) {
+            return "VARCHAR(50)";
+        } else {
+            return "INTEGER";
+        }
+    }
+}
