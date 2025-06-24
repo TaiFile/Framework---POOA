@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
-        DatabaseManager databaseManager = new DatabaseManager(
+        DatabaseManager databaseManager = DatabaseManager.getInstance(
                 "jdbc:postgresql://localhost:5432/framework-db",
                 "root",
                 "root");
