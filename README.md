@@ -2,7 +2,8 @@
 
 ## Descrição
 
-Este projeto implementa um framework de persistência customizado desenvolvido como parte da disciplina de Programação Orientada a Objetos Avançada (POOA). O framework oferece funcionalidades básicas de persistência para objetos Java, utilizando PostgreSQL como banco de dados.
+Este projeto implementa um framework de persistência customizado desenvolvido como parte da disciplina de Programação Orientada a Objetos Avançada (POOA). 
+O framework oferece funcionalidades básicas de persistência para objetos Java, utilizando PostgreSQL como banco de dados.
 
 ## Funcionalidades Principais
 
@@ -15,15 +16,14 @@ O framework de persistência oferece as seguintes operações:
 
 ## Tecnologias Utilizadas
 
-- **Java 24**: Linguagem de programação principal
-- **Jakarta EE**: Framework para aplicações empresariais
+- **Java 21**: Linguagem de programação principal
 - **PostgreSQL**: Sistema de gerenciamento de banco de dados
 - **Maven**: Gerenciamento de dependências e build
 - **Docker**: Containerização do banco de dados
 
 ## Pré-requisitos
 
-- Java 24 ou superior
+- Java 21 ou superior
 - Maven 3.6+
 - Docker e Docker Compose
 - PostgreSQL (via Docker)
