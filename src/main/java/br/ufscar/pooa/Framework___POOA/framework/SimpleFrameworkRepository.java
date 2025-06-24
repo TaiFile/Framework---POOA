@@ -247,12 +247,15 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
                     throw new SQLException("Creating entity failed, no ID obtained.");
                 }
             }
+
+            return entity;
         } catch (SQLException e) {
             handleSQLException(e);
         } catch (IllegalAccessException e) {
             handleReflectionException(e);
         }
-        return entity;
+
+        return null;
     }
 
     private boolean tableExists(String tableName) {
