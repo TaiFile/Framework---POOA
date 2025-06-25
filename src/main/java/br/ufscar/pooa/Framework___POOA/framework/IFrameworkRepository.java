@@ -15,4 +15,6 @@ public interface IFrameworkRepository<T, ID> {
     boolean existsById(ID id);
 
     boolean existsBy(String fieldName, Object value);
+
+    T update(T entity);
 }

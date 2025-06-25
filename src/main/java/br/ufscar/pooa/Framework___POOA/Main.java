@@ -44,6 +44,19 @@ public class Main {
         }
         System.out.println();
 
+        Optional<User> userToUpdate = userRepository.findById(savedUser.getId());
+        if (userToUpdate.isPresent()) {
+            User updateUser = userToUpdate.get();
+            updateUser.setName("Vitor Atualizado");
+            updateUser.setAge(50);
+            updateUser.setGender(UserGender.MALE);
+            User loadedUser = userRepository.update(updateUser);
+            System.out.println("Dados após o load (update): " + loadedUser);
+        } else {
+            System.out.println("Usuário não encontrado para atualização");
+        }
+        System.out.println();
+
         List<User> allUsers = userRepository.findAll();
         if (!allUsers.isEmpty()) {
             System.out.println("Usuários encontrados:");
@@ -63,11 +76,25 @@ public class Main {
         }
         System.out.println();
 
-        boolean userExistsByAge = userRepository.existsBy("age", 23);
+        boolean userExistsByAge = userRepository.existsBy("age", 25);
+
         if (userExistsByAge) {
-            System.out.println("Usuário com idade 23 existe no banco de dados");
+            System.out.println("Usuário com idade 25 existe no banco de dados");
         } else {
-            System.out.println("Usuário com ID 23 não existe no banco de dados");
+            System.out.println("Usuário com idade 25 não existe no banco de dados");
+        }
+        System.out.println();
+        System.out.println("Testando load() com usuário inexistente");
+        try {
+            User nonExistentUser = new User();
+            nonExistentUser.setId(999L);
+            nonExistentUser.setName("Usuário Inexistente");
+            nonExistentUser.setAge(30);
+            nonExistentUser.setGender(UserGender.MALE);
+            
+            userRepository.update(nonExistentUser);
+        } catch (Exception e) {
+            System.out.println("Erro esperado ao tentar fazer load de usuário inexistente: " + e.getMessage());
         }
         System.out.println();
     }

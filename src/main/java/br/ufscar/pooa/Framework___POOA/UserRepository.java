@@ -35,4 +35,7 @@ public class UserRepository {
     public boolean existsBy(String fieldName, Object value) {
         return repository.existsBy(fieldName, value);
     }
+
+    public User update(User entity) { return repository.update(entity);
+    }
 }

@@ -161,6 +161,63 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
         }
     }
 
+    @Override
+    public T update(T entity) {
+        try {
+            String tableName = getTableName(domainClass);
+            List<Field> columns = getColumns(domainClass);
+            Field idField = getIdField(domainClass);
+            createTableIfNotExists(tableName, columns);
+
+            idField.setAccessible(true);
+            Object idValue = idField.get(entity);
+            
+            if (idValue == null) {
+                throw new IllegalArgumentException("Entidade deve ter um ID para ser atualizada");
+            }
+
+            if (!existsById((ID) idValue)) {
+                throw new IllegalArgumentException("Entidade com ID " + idValue + " não existe");
+            }
+
+            String updateSQL = dqlGenerator.generateUpdateSQL(tableName, columns, idField);
+            
+            try (PreparedStatement statement = databaseManager.getConnection().prepareStatement(updateSQL)) {
+                int parameterIndex = 1;
+                for (Field field : columns) {
+                    if (field.isAnnotationPresent(Id.class)) {
+                        continue;
+                    }
+                    
+                    field.setAccessible(true);
+                    Object value = field.get(entity);
+                    if (field.isAnnotationPresent(Enumerated.class) && value != null) {
+                        value = mapEnumToDatabase(value, field);
+                    }
+                    
+                    statement.setObject(parameterIndex++, value);
+                }
+
+                statement.setObject(parameterIndex, idValue);
+                int rowsAffected = statement.executeUpdate();
+                
+                if (rowsAffected == 0) {
+                    throw new RuntimeException("Nenhuma linha foi atualizada");
+                }
+                
+                return entity;
+                
+            } catch (SQLException e) {
+                handleSQLException(e);
+                return null;
+            }
+            
+        } catch (Exception e) {
+            handleReflectionException(e);
+            return null;
+        }
+    }
+
     /**
      * Helper methods
      */
