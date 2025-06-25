@@ -221,6 +221,47 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
         }
     }
 
+    @Override
+    public T delete(T entity) {
+        try {
+            String tableName = getTableName(domainClass);
+            Field idField = getIdField(domainClass);
+
+            idField.setAccessible(true);
+            Object idValue = idField.get(entity);
+
+            if (idValue == null) {
+                throw new IllegalArgumentException("Entidade deve ter um ID para ser deletada");
+            }
+
+            if (!existsById((ID) idValue)) {
+                throw new IllegalArgumentException("Entidade com ID " + idValue + " não existe");
+            }
+
+            String deleteSql = dqlGenerator.generateDeleteSQL(tableName, idField);
+
+            try (PreparedStatement statement = databaseManager.getConnection().prepareStatement(deleteSql)) {
+                statement.setObject(1, idValue);
+
+                int rowsAffected = statement.executeUpdate();
+
+                if (rowsAffected == 0) {
+                    throw new RuntimeException("Nenhuma linha foi deletada");
+                }
+
+                return entity;
+
+            } catch (SQLException e) {
+                handleSQLException(e);
+                return null;
+            }
+
+        } catch (Exception e) {
+            handleReflectionException(e);
+            return null;
+        }
+    }
+
     /**
      * Helper methods
      */

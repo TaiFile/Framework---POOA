@@ -139,4 +139,15 @@ public class DQLGenerator {
 
         return sql.toString();
     }
+
+    public String generateDeleteSQL(String tableName, Field idField) {
+        StringBuilder sql = new StringBuilder("DELETE FROM ");
+        sql.append(tableName);
+        sql.append(" WHERE ");
+
+        Column idColumnAnnotation = idField.getAnnotation(Column.class);
+        sql.append(idColumnAnnotation.name()).append(" = ?");
+
+        return sql.toString();
+    }
 }
