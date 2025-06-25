@@ -1,4 +1,4 @@
-package br.ufscar.pooa.Framework___POOA.framework.database;
+package br.ufscar.pooa.Framework___POOA.persistence_framework.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

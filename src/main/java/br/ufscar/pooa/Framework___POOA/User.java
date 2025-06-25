@@ -1,10 +1,11 @@
 package br.ufscar.pooa.Framework___POOA;
 
 import br.ufscar.pooa.Framework___POOA.Enum.UserGender;
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Column;
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Entity;
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Enumerated;
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Id;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Column;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Entity;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Enumerated;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Id;
+
 
 @Entity(tableName = "users")
 public class User {

@@ -1,7 +1,7 @@
-package br.ufscar.pooa.Framework___POOA.framework.database;
+package br.ufscar.pooa.Framework___POOA.persistence_framework.database;
 
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Column;
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Id;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Column;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Id;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -10,13 +10,19 @@ import java.util.stream.Collectors;
 public class DQLGenerator {
 
     public String generateInsertSQL(String tableName, List<Field> insertColumns) {
-        String columnNames = insertColumns.stream().map(Field::getName).collect(Collectors.joining(","));
-        String questionMarks = insertColumns.stream().map(i -> "?").collect(Collectors.joining(","));
+        String columnNames = insertColumns.stream()
+                .map(Field::getName)
+                .collect(Collectors.joining(","));
+
+        String questionMarks = insertColumns.stream()
+                .map(i -> "?")
+                .collect(Collectors.joining(","));
 
         return String.format("""
-                INSERT INTO %s (%s)
-                VALUES (%s)
-                """, tableName, columnNames, questionMarks);
+            INSERT INTO %s (%s)
+            VALUES (%s)
+            RETURNING id
+            """, tableName, columnNames, questionMarks);
     }
     
     public String generateUpdateSQL(String tableName, List<Field> updateColumns, Field idField) {
@@ -123,7 +129,7 @@ public class DQLGenerator {
         return sql.toString();
     }
 
-    public String generateExistsByFieldSQL(String tableName, java.lang.reflect.Field field) {
+    public String generateExistsByFieldSQL(String tableName, Field field) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM ");
         sql.append(tableName);
         sql.append(" WHERE ");

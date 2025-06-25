@@ -1,12 +1,14 @@
-package br.ufscar.pooa.Framework___POOA.framework;
+package br.ufscar.pooa.Framework___POOA.persistence_framework;
 
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Column;
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Entity;
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Enumerated;
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Id;
-import br.ufscar.pooa.Framework___POOA.framework.database.DDLGenerator;
-import br.ufscar.pooa.Framework___POOA.framework.database.DQLGenerator;
-import br.ufscar.pooa.Framework___POOA.framework.database.DatabaseManager;
+
+
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Column;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Entity;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Enumerated;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Id;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.database.DDLGenerator;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.database.DQLGenerator;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.database.DatabaseManager;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -161,6 +163,7 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public T update(T entity) {
         try {
@@ -394,8 +397,11 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     Field idField = getIdField(domainClass);
+
                     Object generatedId = generatedKeys.getObject(1);
-                    idField.set(entity, generatedId);
+                    Object convertedId = convertIdValue(generatedId, idField.getType());
+
+                    idField.set(entity, convertedId);
                 } else {
                     throw new SQLException("Creating entity failed, no ID obtained.");
                 }
@@ -411,6 +417,27 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
         return null;
     }
 
+    private Object convertIdValue(Object value, Class<?> targetType) {
+        if (value == null) return null;
+
+        // Se os tipos já são compatíveis
+        if (targetType.isAssignableFrom(value.getClass())) {
+            return value;
+        }
+
+        // Conversões específicas
+        if (targetType == Long.class || targetType == long.class) {
+            if (value instanceof Number) {
+                return ((Number) value).longValue();
+            }
+        } else if (targetType == Integer.class || targetType == int.class) {
+            if (value instanceof Number) {
+                return ((Number) value).intValue();
+            }
+        }
+
+        return value;
+    }
 
     private boolean tableExists(String tableName) {
         try {

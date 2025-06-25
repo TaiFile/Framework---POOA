@@ -1,6 +1,6 @@
-package br.ufscar.pooa.Framework___POOA.framework.database;
+package br.ufscar.pooa.Framework___POOA.persistence_framework.database;
 
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Enumerated;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Enumerated;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;

@@ -1,6 +1,6 @@
 package br.ufscar.pooa.Framework___POOA;
 
-import br.ufscar.pooa.Framework___POOA.framework.IFrameworkRepository;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.IFrameworkRepository;
 
 import java.util.List;
 import java.util.Optional;
