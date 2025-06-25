@@ -10,13 +10,19 @@ import java.util.stream.Collectors;
 public class DQLGenerator {
 
     public String generateInsertSQL(String tableName, List<Field> insertColumns) {
-        String columnNames = insertColumns.stream().map(Field::getName).collect(Collectors.joining(","));
-        String questionMarks = insertColumns.stream().map(i -> "?").collect(Collectors.joining(","));
+        String columnNames = insertColumns.stream()
+                .map(Field::getName)
+                .collect(Collectors.joining(","));
+
+        String questionMarks = insertColumns.stream()
+                .map(i -> "?")
+                .collect(Collectors.joining(","));
 
         return String.format("""
-                INSERT INTO %s (%s)
-                VALUES (%s)
-                """, tableName, columnNames, questionMarks);
+            INSERT INTO %s (%s)
+            VALUES (%s)
+            RETURNING id
+            """, tableName, columnNames, questionMarks);
     }
     
     public String generateUpdateSQL(String tableName, List<Field> updateColumns, Field idField) {
