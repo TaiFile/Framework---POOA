@@ -1,8 +1,9 @@
 package br.ufscar.pooa.Framework___POOA;
 
-
 import br.ufscar.pooa.Framework___POOA.Enum.UserGender;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.IFrameworkRepository;
 import br.ufscar.pooa.Framework___POOA.persistence_framework.database.DatabaseManager;
+
 
 import java.sql.SQLException;
 import java.util.List;
@@ -10,128 +11,63 @@ import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
+        // 1. Configuração do Banco de Dados e Repositório
+        System.out.println("--- Iniciando a demonstração ---");
         DatabaseManager databaseManager = DatabaseManager.getInstance(
-                "jdbc:postgresql://localhost:5432/framework-db",
-                "root",
-                "root");
+                "jdbc:postgresql://localhost:5432/framework-db", // Sua URL
+                "root", // Seu usuário
+                "root"  // Sua senha
+        );
 
         FrameworkRepositoryFactory<User, Long> factory = new FrameworkRepositoryFactory<>(databaseManager);
-        br.ufscar.pooa.Framework___POOA.persistence_framework.IFrameworkRepository<User, Long> frameworkRepository = factory.getRepository(User.class);
-        UserRepository userRepository = new UserRepository(frameworkRepository);
+        UserRepository userRepository = new UserRepository(factory.getRepository(User.class));
+        System.out.println("Configuração concluída.\n");
 
+        // 2. CREATE: Salvando um novo usuário
+        System.out.println("--- 1. CRIANDO USUÁRIO ---");
         User user = new User();
-        user.setName("Vitor");
-        user.setAge(23);
+        user.setName("Carlos");
+        user.setAge(45);
         user.setGender(UserGender.MALE);
 
         User savedUser = userRepository.save(user);
-        System.out.println("Usuário salvo: " + savedUser);
-        System.out.println();
+        System.out.println("Usuário salvo no banco: " + savedUser + "\n");
 
-        Optional<User> foundUser = userRepository.findById(1L);
-        if (foundUser.isPresent()) {
-            System.out.println("Usuário encontrado pelo ID 1: " + foundUser.get().getName());
-        } else {
-            System.out.println("Usuário não encontrado");
-        }
-        System.out.println();
+        // 3. READ: Buscando o usuário para confirmar que ele existe
+        System.out.println("--- 2. LENDO USUÁRIO ---");
+        Long userId = savedUser.getId();
+        Optional<User> foundUser = userRepository.findById(userId);
+        foundUser.ifPresent(u -> System.out.println("Usuário encontrado por ID: " + u));
 
-        Optional<User> foundUserByName = userRepository.findBy("name", "Vitor");
-        if (foundUserByName.isPresent()) {
-            System.out.println("Usuário encontrado pelo Nome Vitor: " + foundUserByName.get());
-        } else {
-            System.out.println("Usuário não encontrado");
-        }
-        System.out.println();
-
-        Optional<User> userToUpdate = userRepository.findById(savedUser.getId());
-        if (userToUpdate.isPresent()) {
-            User updateUser = userToUpdate.get();
-            updateUser.setName("Vitor Atualizado");
-            updateUser.setAge(50);
-            updateUser.setGender(UserGender.MALE);
-            User loadedUser = userRepository.update(updateUser);
-            System.out.println("Dados após o load (update): " + loadedUser);
-        } else {
-            System.out.println("Usuário não encontrado para atualização");
-        }
-        System.out.println();
-
+        // Demonstração rápida do findAll e existsBy
         List<User> allUsers = userRepository.findAll();
-        if (!allUsers.isEmpty()) {
-            System.out.println("Usuários encontrados:");
-            for (User u : allUsers) {
-                System.out.println(u);
-            }
-        } else {
-            System.out.println("Nenhum usuário encontrado");
+        System.out.println("Total de usuários no banco agora: " + allUsers.size());
+        System.out.println("Existe um usuário com o nome 'Carlos'? " + userRepository.existsBy("name", "Carlos") + "\n");
+
+        // 4. UPDATE: Atualizando os dados do usuário
+        System.out.println("--- 3. ATUALIZANDO USUÁRIO ---");
+        if (foundUser.isPresent()) {
+            User userToUpdate = foundUser.get();
+            System.out.println("Dados antes da atualização: " + userToUpdate);
+
+            userToUpdate.setName("Carlos Alberto");
+            userToUpdate.setAge(46);
+            User updatedUser = userRepository.update(userToUpdate);
+
+            System.out.println("Dados depois da atualização: " + updatedUser + "\n");
         }
-        System.out.println();
 
-        boolean userExists = userRepository.existsById(1L);
-        if (userExists) {
-            System.out.println("Usuário com ID 1 existe no banco de dados");
-        } else {
-            System.out.println("Usuário com ID 1 não existe no banco de dados");
-        }
-        System.out.println();
+        // 5. DELETE: Removendo o usuário do banco de dados
+        System.out.println("--- 4. DELETANDO USUÁRIO ---");
+        userRepository.delete(savedUser);
+        System.out.println("Usuário com ID " + userId + " foi deletado.\n");
 
-        boolean userExistsByAge = userRepository.existsBy("age", 25);
+        // 6. VERIFICAÇÃO FINAL: Confirmando que o usuário não existe mais
+        System.out.println("--- 5. VERIFICAÇÃO FINAL ---");
+        boolean stillExists = userRepository.existsById(userId);
+        System.out.println("O usuário com ID " + userId + " ainda existe? " + stillExists);
 
-        if (userExistsByAge) {
-            System.out.println("Usuário com idade 25 existe no banco de dados");
-        } else {
-            System.out.println("Usuário com idade 25 não existe no banco de dados");
-        }
-        System.out.println();
-
-        System.out.println("Testando load() com usuário inexistente");
-        try {
-            User nonExistentUser = new User();
-            nonExistentUser.setId(999L);
-            nonExistentUser.setName("Usuário Inexistente");
-            nonExistentUser.setAge(30);
-            nonExistentUser.setGender(UserGender.MALE);
-            
-            userRepository.update(nonExistentUser);
-        } catch (Exception e) {
-            System.out.println("Erro esperado ao tentar fazer load de usuário inexistente: " + e.getMessage());
-        }
-        System.out.println();
-
-        System.out.println("Testando delete de usuário");
-        Optional<User> userToDelete = userRepository.findById(savedUser.getId());
-        if (userToDelete.isPresent()) {
-            try {
-                userRepository.delete(userToDelete.get());
-                System.out.println("Usuário deletado com sucesso: " + userToDelete.get().getName());
-
-                boolean stillExists = userRepository.existsById(savedUser.getId());
-                if (!stillExists) {
-                    System.out.println("Confirmado: Usuário foi removido do banco de dados");
-                } else {
-                    System.out.println("Erro: Usuário ainda existe no banco de dados");
-                }
-            } catch (Exception e) {
-                System.out.println("Erro ao deletar usuário: " + e.getMessage());
-            }
-        } else {
-            System.out.println("Usuário não encontrado para deletar");
-        }
-        System.out.println();
-
-        System.out.println("Testando delete de usuário inexistente");
-        try {
-            User nonExistentUser = new User();
-            nonExistentUser.setId(999L);
-            nonExistentUser.setName("Usuário Inexistente");
-            nonExistentUser.setAge(30);
-            nonExistentUser.setGender(UserGender.MALE);
-
-            userRepository.delete(nonExistentUser);
-        } catch (Exception e) {
-            System.out.println("Erro esperado ao tentar deletar usuário inexistente: " + e.getMessage());
-        }
-        System.out.println();
+        System.out.println("Usuários restantes no banco: " + userRepository.findAll().size());
+        System.out.println("\n--- Fim da demonstração ---");
     }
 }
