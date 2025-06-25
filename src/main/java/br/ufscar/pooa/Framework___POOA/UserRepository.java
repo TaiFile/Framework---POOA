@@ -36,6 +36,7 @@ public class UserRepository {
         return repository.existsBy(fieldName, value);
     }
 
-    public User update(User entity) { return repository.update(entity);
-    }
+    public User update(User entity) { return repository.update(entity); }
+
+    public User delete(User entity){ return repository.delete(entity); }
 }

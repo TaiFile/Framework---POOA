@@ -84,6 +84,7 @@ public class Main {
             System.out.println("Usuário com idade 25 não existe no banco de dados");
         }
         System.out.println();
+
         System.out.println("Testando load() com usuário inexistente");
         try {
             User nonExistentUser = new User();
@@ -95,6 +96,41 @@ public class Main {
             userRepository.update(nonExistentUser);
         } catch (Exception e) {
             System.out.println("Erro esperado ao tentar fazer load de usuário inexistente: " + e.getMessage());
+        }
+        System.out.println();
+
+        System.out.println("Testando delete de usuário");
+        Optional<User> userToDelete = userRepository.findById(savedUser.getId());
+        if (userToDelete.isPresent()) {
+            User deletedUser = userRepository.delete(userToDelete.get());
+            if (deletedUser != null) {
+                System.out.println("Usuário deletado com sucesso: " + deletedUser.getName());
+
+                boolean stillExists = userRepository.existsById(savedUser.getId());
+                if (!stillExists) {
+                    System.out.println("Confirmado: Usuário foi removido do banco de dados");
+                } else {
+                    System.out.println("Erro: Usuário ainda existe no banco de dados");
+                }
+            } else {
+                System.out.println("Erro ao deletar usuário");
+            }
+        } else {
+            System.out.println("Usuário não encontrado para deletar");
+        }
+        System.out.println();
+
+        System.out.println("Testando delete de usuário inexistente");
+        try {
+            User nonExistentUser = new User();
+            nonExistentUser.setId(999L);
+            nonExistentUser.setName("Usuário Inexistente");
+            nonExistentUser.setAge(30);
+            nonExistentUser.setGender(UserGender.MALE);
+
+            userRepository.delete(nonExistentUser);
+        } catch (Exception e) {
+            System.out.println("Erro esperado ao tentar deletar usuário inexistente: " + e.getMessage());
         }
         System.out.println();
     }
