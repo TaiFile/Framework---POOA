@@ -18,5 +18,5 @@ public interface IFrameworkRepository<T, ID> {
 
     T update(T entity);
 
-    T delete(T entity);
+    void delete(T entity);
 }

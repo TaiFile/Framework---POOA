@@ -222,7 +222,7 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
     }
 
     @Override
-    public T delete(T entity) {
+    public void delete(T entity) {
         try {
             String tableName = getTableName(domainClass);
             Field idField = getIdField(domainClass);
@@ -249,16 +249,12 @@ public class SimpleFrameworkRepository<T, ID extends Serializable> implements IF
                     throw new RuntimeException("Nenhuma linha foi deletada");
                 }
 
-                return entity;
-
             } catch (SQLException e) {
                 handleSQLException(e);
-                return null;
             }
 
         } catch (Exception e) {
             handleReflectionException(e);
-            return null;
         }
     }
 

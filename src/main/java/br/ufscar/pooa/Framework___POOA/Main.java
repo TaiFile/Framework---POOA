@@ -102,9 +102,9 @@ public class Main {
         System.out.println("Testando delete de usuário");
         Optional<User> userToDelete = userRepository.findById(savedUser.getId());
         if (userToDelete.isPresent()) {
-            User deletedUser = userRepository.delete(userToDelete.get());
-            if (deletedUser != null) {
-                System.out.println("Usuário deletado com sucesso: " + deletedUser.getName());
+            try {
+                userRepository.delete(userToDelete.get());
+                System.out.println("Usuário deletado com sucesso: " + userToDelete.get().getName());
 
                 boolean stillExists = userRepository.existsById(savedUser.getId());
                 if (!stillExists) {
@@ -112,8 +112,8 @@ public class Main {
                 } else {
                     System.out.println("Erro: Usuário ainda existe no banco de dados");
                 }
-            } else {
-                System.out.println("Erro ao deletar usuário");
+            } catch (Exception e) {
+                System.out.println("Erro ao deletar usuário: " + e.getMessage());
             }
         } else {
             System.out.println("Usuário não encontrado para deletar");

@@ -38,5 +38,5 @@ public class UserRepository {
 
     public User update(User entity) { return repository.update(entity); }
 
-    public User delete(User entity){ return repository.delete(entity); }
+    public void delete(User entity){ repository.delete(entity); }
 }
