@@ -1,4 +1,4 @@
-package br.ufscar.pooa.Framework___POOA.framework.annotation;
+package br.ufscar.pooa.Framework___POOA.persistence_framework.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

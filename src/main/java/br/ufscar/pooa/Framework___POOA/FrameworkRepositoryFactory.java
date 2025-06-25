@@ -1,8 +1,8 @@
 package br.ufscar.pooa.Framework___POOA;
 
-import br.ufscar.pooa.Framework___POOA.framework.IFrameworkRepository;
-import br.ufscar.pooa.Framework___POOA.framework.SimpleFrameworkRepository;
-import br.ufscar.pooa.Framework___POOA.framework.database.DatabaseManager;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.IFrameworkRepository;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.SimpleFrameworkRepository;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.database.DatabaseManager;
 
 import java.io.Serializable;
 

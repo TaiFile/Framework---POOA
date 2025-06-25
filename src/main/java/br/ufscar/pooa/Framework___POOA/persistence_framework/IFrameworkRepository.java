@@ -1,4 +1,4 @@
-package br.ufscar.pooa.Framework___POOA.framework;
+package br.ufscar.pooa.Framework___POOA.persistence_framework;
 
 import java.util.List;
 import java.util.Optional;

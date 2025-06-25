@@ -1,8 +1,8 @@
 package br.ufscar.pooa.Framework___POOA;
 
+
 import br.ufscar.pooa.Framework___POOA.Enum.UserGender;
-import br.ufscar.pooa.Framework___POOA.framework.IFrameworkRepository;
-import br.ufscar.pooa.Framework___POOA.framework.database.DatabaseManager;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.database.DatabaseManager;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -16,7 +16,7 @@ public class Main {
                 "root");
 
         FrameworkRepositoryFactory<User, Long> factory = new FrameworkRepositoryFactory<>(databaseManager);
-        IFrameworkRepository<User, Long> frameworkRepository = factory.getRepository(User.class);
+        br.ufscar.pooa.Framework___POOA.persistence_framework.IFrameworkRepository<User, Long> frameworkRepository = factory.getRepository(User.class);
         UserRepository userRepository = new UserRepository(frameworkRepository);
 
         User user = new User();

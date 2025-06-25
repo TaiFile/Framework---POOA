@@ -1,7 +1,7 @@
-package br.ufscar.pooa.Framework___POOA.framework.database;
+package br.ufscar.pooa.Framework___POOA.persistence_framework.database;
 
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Column;
-import br.ufscar.pooa.Framework___POOA.framework.annotation.Id;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Column;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.annotation.Id;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -123,7 +123,7 @@ public class DQLGenerator {
         return sql.toString();
     }
 
-    public String generateExistsByFieldSQL(String tableName, java.lang.reflect.Field field) {
+    public String generateExistsByFieldSQL(String tableName, Field field) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM ");
         sql.append(tableName);
         sql.append(" WHERE ");
