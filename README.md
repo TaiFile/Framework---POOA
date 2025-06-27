@@ -35,3 +35,4 @@ Usar o comando 'docker compose up --build -d'
 
 - Atualizar as tabelas no banco de dados quando houver alterações nas classes
 - Mapeamento de relacionamentos entre classes
+- Recuperar todos os dados da nova linha inserido no Insert
