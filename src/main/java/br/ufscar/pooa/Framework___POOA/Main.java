@@ -2,8 +2,8 @@ package br.ufscar.pooa.Framework___POOA;
 
 import br.ufscar.pooa.Framework___POOA.Enum.UserGender;
 import br.ufscar.pooa.Framework___POOA.persistence_framework.IFrameworkRepository;
-import br.ufscar.pooa.Framework___POOA.persistence_framework.database.DatabaseManager;
-
+import br.ufscar.pooa.Framework___POOA.persistence_framework.SimpleFrameworkRepository;
+import br.ufscar.pooa.Framework___POOA.persistence_framework.database.*;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -11,19 +11,31 @@ import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
-        // 1. Configuração do Banco de Dados e Repositório
+        // Configuração da conexão com Banco de Dados
         System.out.println("--- Iniciando a demonstração ---");
         DatabaseManager databaseManager = DatabaseManager.getInstance(
-                "jdbc:postgresql://localhost:5432/framework-db", // Sua URL
-                "root", // Seu usuário
-                "root"  // Sua senha
+                "jdbc:postgresql://localhost:5433/framework-db",
+                "root",
+                "root"
         );
 
-        FrameworkRepositoryFactory<User, Long> factory = new FrameworkRepositoryFactory<>(databaseManager);
-        UserRepository userRepository = new UserRepository(factory.getRepository(User.class));
+        // Definição as classes de entidade
+        List<Class<?>> entityClasses = List.of(
+                User.class
+        );
+
+        // Cria as tabelas no banco de dados
+        DDLGenerator ddlGenerator = new DDLGenerator();
+        SchemaManager schemaManager = new SchemaManager(databaseManager, ddlGenerator, entityClasses);
+        schemaManager.initializeSchema(); // Cria as tabelas se elas ainda não existirem
+
+        // Configuração do Repositório
+        DQLGenerator dqlGenerator = new DQLGenerator();
+        JDBCExecutor jdbcExecutor = new JDBCExecutor(databaseManager);
+        IFrameworkRepository<User, Long> userRepository = new SimpleFrameworkRepository<>(jdbcExecutor, dqlGenerator, User.class);
         System.out.println("Configuração concluída.\n");
 
-        // 2. CREATE: Salvando um novo usuário
+        // 1. CREATE: Salvando um novo usuário
         System.out.println("--- 1. CRIANDO USUÁRIO ---");
         User user = new User();
         user.setName("Carlos");
@@ -33,13 +45,13 @@ public class Main {
         User savedUser = userRepository.save(user);
         System.out.println("Usuário salvo no banco: " + savedUser + "\n");
 
-        // 3. READ: Buscando o usuário para confirmar que ele existe
+        // 2. READ: Buscando o usuário para confirmar que ele existe
         System.out.println("--- 2. LENDO USUÁRIO ---");
         Long userId = savedUser.getId();
         Optional<User> foundUser = userRepository.findById(userId);
         foundUser.ifPresent(u -> System.out.println("Usuário encontrado por ID: " + u));
 
-        // Demonstração rápida do findAll e existsBy
+        // 3. Demonstração rápida do findAll e existsBy
         List<User> allUsers = userRepository.findAll();
         System.out.println("Total de usuários no banco agora: " + allUsers.size());
         System.out.println("Existe um usuário com o nome 'Carlos'? " + userRepository.existsBy("name", "Carlos") + "\n");
